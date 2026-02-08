@@ -22,15 +22,15 @@ public class TradingController : ControllerBase
     [HttpPost("buy")]
     public async Task<IActionResult> Buy(BuySellDto dto)
     {
-        await _service.BuyAsync(GetUserId(), dto);
-        return Ok("Buy order successful");
+        var res=await _service.BuyAsync(GetUserId(), dto);
+        return Ok(res);
     }
 
     [HttpPost("sell")]
     public async Task<IActionResult> Sell(BuySellDto dto)
     {
-        await _service.SellAsync(GetUserId(), dto);
-        return Ok("Sell order successful");
+        var res=await _service.SellAsync(GetUserId(), dto);
+        return Ok(res);
     }
 
 

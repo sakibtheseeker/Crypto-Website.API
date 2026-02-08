@@ -18,65 +18,110 @@ namespace Crypto_Website.Application.Services
             _marketService = marketService;
         }
 
-        public async Task<List<CryptoResponseDto>> GetCryptosAsync()
-        {
-            var cryptos = await _cryptoRepo.GetAllAsync();
+        //public async Task<ApiResponse<List<CryptoResponseDto>>> GetCryptosAsync()
+        //{
+        //    var cryptos = await _cryptoRepo.GetAllAsync();
 
-            return cryptos.Select(x => new CryptoResponseDto
-            {
-                Id = x.Cid,
-                Name = x.Cname,
-                Symbol = x.Csymbol,
-                Price = x.CurrentPrice,
-                Provider = x.ProviderName
-            }).ToList();
-        }
+        //    var result= cryptos.Select(x => new CryptoResponseDto
+        //    {
+        //        Id = x.Cid,
+        //        Name = x.Cname,
+        //        Symbol = x.Csymbol,
+        //        Price = x.CurrentPrice,
+        //        Provider = x.ProviderName
+        //    }).ToList();
 
-        public async Task<object> GetCryptosAsync(int pageNumber, int pageSize)
+        //    return ApiResponse<List<CryptoResponseDto>>.SuccessResponse(result,"Crypto Inserted Successfully");
+        //}
+
+        public async Task<object> GetCryptosAsync(int uid,int pageNumber, int pageSize)
         {
             if (pageNumber <= 0) pageNumber = 1;
             if (pageSize <= 0) pageSize = 10;
 
-            var (data, totalRecords) =
-                await _cryptoRepo.GetPagedAsync(pageNumber, pageSize);
+            var pagedResult = await _cryptoRepo.GetPagedAsync(pageNumber, pageSize);
+            var data = pagedResult.Data;
+            var totalRecords = pagedResult.TotalRecords;
 
-            var result= data.Select(x => new CryptoResponseDto
+            var portfolioAssets = await _cryptoRepo.GetUserPortfolioAssetsAsync(uid);
+
+            var holdingsMap = portfolioAssets.ToDictionary(
+                x => x.Cid,
+                x => x.Quantity
+            );
+
+
+
+            var result = data.Select(x => new CryptoResponseDto
             {
                 Id = x.Cid,
                 Name = x.Cname,
                 Symbol = x.Csymbol,
+                Image=x.CimageUrl,
                 Price = x.CurrentPrice,
-                Provider = x.ProviderName
+                Provider = x.ProviderName,
+                Market_cap=x.market_cap,
+        
+                Total_volume=x.total_volume,
+                Price_change_24h=x.price_change_24h,
+                Price_change_percentage_24h=x.price_change_percentage_24h,
+                Quantity = holdingsMap.ContainsKey(x.Cid)
+        ? holdingsMap[x.Cid]
+        : 0   
             }).ToList();
 
             return new PagedResponse< CryptoResponseDto >(result, pageNumber, pageSize, totalRecords, totalRecords);
         }
 
-        public async Task<int> SyncCryptosFromMarketAsync()
+        public async Task<ApiResponse<int>> SyncCryptosFromMarketAsync()
         {
             var coins = await _marketService.GetMarketCryptosAsync();
-            int inserted = 0;
+            int affected = 0;
 
             foreach (var coin in coins)
             {
-                if (await _cryptoRepo.ExistsAsync(coin.Symbol.ToUpper()))
-                    continue;
+                var symbol = coin.Symbol.ToUpper();
+                var crypto = await _cryptoRepo.GetBySymbolAsync(symbol);
 
-                var crypto = new Crypto
+                if (crypto != null)
                 {
-                    Cname = coin.Name,
-                    Csymbol = coin.Symbol,
-                    CurrentPrice = coin.CurrentPrice,
-                    ProviderName = "coingecko",
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                };
+                   
+                    crypto.CurrentPrice = coin.CurrentPrice;
+                    crypto.market_cap = coin.Market_cap;
+                    crypto.total_volume = coin.Total_volume;
+                    crypto.price_change_24h = coin.Price_change_24h;
+                    crypto.price_change_percentage_24h = coin.Price_change_percentage_24h;
+                    crypto.CimageUrl = coin.ImageUrl;
+                    crypto.UpdatedAt = DateTime.UtcNow;
 
-                await _cryptoRepo.AddAsync(crypto);
-                inserted++;
+                    await _cryptoRepo.UpdateAsync(crypto);
+                }
+                else
+                {
+                  
+                    await _cryptoRepo.AddAsync(new Crypto
+                    {
+                        Cname = coin.Name,
+                        Csymbol = symbol,
+                        CimageUrl = coin.ImageUrl,
+                        CurrentPrice = coin.CurrentPrice,
+                        ProviderName = "coingecko",
+                        market_cap = coin.Market_cap,
+                        total_volume = coin.Total_volume,
+                        price_change_24h = coin.Price_change_24h,
+                        price_change_percentage_24h = coin.Price_change_percentage_24h,
+                        CreatedAt = DateTime.UtcNow,
+                        IsActive = true
+                    });
+                }
+
+                affected++;
             }
 
-            return inserted;
+            return ApiResponse<int>.SuccessResponse(
+                affected,
+                "Crypto prices synced successfully"
+            );
         }
 
 
@@ -94,8 +139,15 @@ namespace Crypto_Website.Application.Services
                 Id=cry.Cid,
                 Name = cry.Cname,
                 Symbol = cry.Csymbol,
+                Image=cry.CimageUrl,
+
                 Price = cry.CurrentPrice,
-                Provider = cry.ProviderName
+                Provider = cry.ProviderName,
+
+                Market_cap=cry.market_cap,
+                Total_volume=cry.total_volume,
+                Price_change_24h=cry.price_change_24h,
+                Price_change_percentage_24h=cry.price_change_percentage_24h
             };
 
             return ApiResponse<CryptoResponseDto>.SuccessResponse(result, "Crypto Fetched Successfully");

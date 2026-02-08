@@ -14,6 +14,7 @@ public class WalletController : ControllerBase
     {
         _service = service;
     }
+
     private int GetUserId()
     {
         var uidClaim =
@@ -29,26 +30,44 @@ public class WalletController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetWallet()
     {
-        return Ok(await _service.GetWalletAsync(GetUserId()));
+        var res = await _service.GetWalletAsync(GetUserId());
+
+        if (res == null)
+            return NotFound("Wallet not found");
+
+        return Ok(res);
     }
 
     [HttpGet("transactions")]
     public async Task<IActionResult> GetTransactions()
     {
-        return Ok(await _service.GetTransactionsAsync(GetUserId()));
+        var res = await _service.GetTransactionsAsync(GetUserId());
+
+        if (res == null)
+            return NotFound("Wallet not found");
+
+        return Ok(res);
     }
 
     [HttpPost("deposit")]
     public async Task<IActionResult> Deposit(decimal amount)
     {
-        await _service.DepositAsync(GetUserId(), amount);
-        return Ok("Deposit successful");
+        var res = await _service.DepositAsync(GetUserId(), amount);
+
+        if (res == null)
+            return BadRequest("Deposit failed");
+
+        return Ok(res);
     }
 
     [HttpPost("withdraw")]
     public async Task<IActionResult> Withdraw(decimal amount)
     {
-        await _service.WithdrawAsync(GetUserId(), amount);
-        return Ok("Withdraw successful");
+        var res = await _service.WithdrawAsync(GetUserId(), amount);
+
+        if (res == null)
+            return BadRequest("Withdraw failed");
+
+        return Ok(res);
     }
 }

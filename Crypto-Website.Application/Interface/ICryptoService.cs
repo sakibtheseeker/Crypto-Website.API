@@ -4,11 +4,11 @@ namespace Crypto_Website.Application.Interface
 {
     public interface ICryptoService
     {
-        Task<List<CryptoResponseDto>> GetCryptosAsync();
+        //Task<ApiResponse<List<CryptoResponseDto>> >GetCryptosAsync();
 
-        Task<object> GetCryptosAsync(int pageNumber, int pageSize);
+        Task<object> GetCryptosAsync(int uid, int pageNumber, int pageSize);
 
-        Task<int> SyncCryptosFromMarketAsync();
+        Task<ApiResponse<int> >SyncCryptosFromMarketAsync();
 
 
         Task<ApiResponse<CryptoResponseDto>>  GetCryptosByIdAsync(int cid);

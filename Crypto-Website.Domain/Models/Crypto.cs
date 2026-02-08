@@ -20,7 +20,14 @@ namespace Crypto_Website.Domain.Models
 
         public string Csymbol { get; set; }
 
+        public string CimageUrl { get; set; }
+
         public decimal CurrentPrice { get; set; }
+
+        public decimal? market_cap { get; set; }
+        public decimal? total_volume { get; set; }
+        public decimal? price_change_24h { get; set; }
+        public decimal? price_change_percentage_24h { get; set; }
 
         public string ProviderName { get; set; } = "CoinGecko";
 

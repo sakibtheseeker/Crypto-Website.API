@@ -1,20 +1,43 @@
 ﻿using Crypto_Website.Application.DTO.Portfolio;
 using Crypto_Website.Application.Interface;
+using Crypto_Website.Domain.Models;
 
-namespace Crypto_Website.Application.Services
+public class PortfolioService
 {
-    public class PortfolioService
+    private readonly IPortfolioRepository _portfolioRepo;
+    private readonly IPortfolioAssetRepository _assetRepo;
+
+    public PortfolioService(
+        IPortfolioRepository portfolioRepo,
+        IPortfolioAssetRepository assetRepo)
     {
-        private readonly IPortfolioRepository _repo;
+        _portfolioRepo = portfolioRepo;
+        _assetRepo = assetRepo;
+    }
 
-        public PortfolioService(IPortfolioRepository repo)
+    public async Task<PortfolioResponseDto> GetPortfolioAsync(int uid)
+    {
+        var portfolio = await _portfolioRepo.GetByUserIdAsync(uid);
+
+        if (portfolio == null)
         {
-            _repo = repo;
+            portfolio = new Portfolio
+            {
+                Uid = uid,
+                CreatedBy = uid
+            };
+
+            await _portfolioRepo.AddAsync(portfolio);
+
+
         }
 
-        public async Task<List<PortfolioResponseDto>> GetPortfolioAsync(int uid)
+        var assets = await _assetRepo.GetByPortfolioIdAsync(portfolio.Pid);
+
+        return new PortfolioResponseDto
         {
-            return await _repo.GetByUserIdAsync(uid);
-        }
+            Pid = portfolio.Pid,
+            Assets = assets
+        };
     }
 }

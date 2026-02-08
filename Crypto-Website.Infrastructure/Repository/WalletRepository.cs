@@ -12,14 +12,21 @@ public class WalletRepository : IWalletRepository
         _db = db;
     }
 
-    public async Task<Wallet> GetByUserIdAsync(int uid)
+    public async Task<Wallet?> GetByUserIdAsync(int uid)
     {
-        return await _db.Wallets.FirstAsync(w => w.Uid == uid);
+        return await _db.Wallets
+            .FirstOrDefaultAsync(w => w.Uid == uid && w.IsActive);
+    }
+    public async Task AddAsync(Wallet wallet)
+    {
+        _db.Wallets.Add(wallet);
+        await _db.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Wallet wallet)
     {
         _db.Wallets.Update(wallet);
+        //db.WalletTransactions.Update(wallet);
         await _db.SaveChangesAsync();
     }
 }

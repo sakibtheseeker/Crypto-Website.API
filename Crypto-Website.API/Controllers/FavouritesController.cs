@@ -1,9 +1,8 @@
 ﻿using Crypto_Website.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
-//[Authorize]
+[Authorize]
 [ApiController]
 [Route("api/v1/favourites")]
 public class FavouritesController : ControllerBase
@@ -15,7 +14,6 @@ public class FavouritesController : ControllerBase
         _service = service;
     }
 
-
     [HttpGet]
     [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Client)]
     public async Task<IActionResult> Get()
@@ -25,42 +23,36 @@ public class FavouritesController : ControllerBase
     }
 
     [HttpPost("{cryptoId}")]
-
     public async Task<IActionResult> Add(int cryptoId)
     {
         var uidClaim = User.FindFirst("uid");
-
         if (uidClaim == null)
             return Unauthorized("User ID not found in token");
 
         int uid = int.Parse(uidClaim.Value);
 
-        await _service.AddAsync(uid, cryptoId);
-        return Ok("Added to favourites");
+        return Ok(await _service.AddAsync(uid, cryptoId));
     }
-
-
 
     [HttpGet("{fid}")]
     public async Task<IActionResult> GetById(int fid)
     {
-        var fav = await _service.GetFavIdAsync(fid);
-        if (fav == null)
+        var res = await _service.GetFavIdAsync(fid);
+
+        if (res == null)
             return NotFound("Favourite not found");
 
-        return Ok(fav);
+        return Ok(res);
     }
 
     [HttpDelete("{fid}")]
-    public async Task <IActionResult> DeleteById(int fid)
+    public async Task<IActionResult> DeleteById(int fid)
     {
-        var fav = await _service.DeleteFavIdAsyn(fid);
+        var res = await _service.DeleteFavIdAsyn(fid);
 
-        if (fav == null)
+        if (res == null)
             return NotFound("Favourite not found");
 
-        return Ok(new {message="Favourite Deleted Successfully"});
-
+        return Ok(res);
     }
-
 }

@@ -18,6 +18,8 @@ namespace Crypto_Website.Domain.Models
         public string? TransactionStatus { get; set; }      
         public string PaymentMethod { get; set; } = null!;
 
+        public string Description { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int? CreatedBy { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using Crypto_Website.Application.DTO.Favourite;
+using Crypto_Website.Application.Helper;
 using Crypto_Website.Application.Interface;
 using Crypto_Website.Domain.Models;
 using Crypto_Website.Infrastructure.Data;
@@ -14,15 +15,23 @@ public class FavouriteRepository : IFavouriteRepository
         _context = context;
     }
 
-    public async Task AddAsync(Favourite favourite)
+    public async Task<Favourite> AddAsync(Favourite favourite)
     {
-        //if(favourite.Cid==favourite.Crypto.Cid)
-        //{
-        //    return Ok(new { message = "Favourite Already Exist " });
-        //}
         _context.Favourites.Add(favourite);
         await _context.SaveChangesAsync();
+
+        return await _context.Favourites
+            .Include(f => f.Crypto)
+            .FirstAsync(f => f.Fid == favourite.Fid);
     }
+
+    public async Task<Favourite?> GetByUserAndCryptoAsync(int uid, int cid)
+    {
+        return await _context.Favourites
+            .Include(f => f.Crypto)
+            .FirstOrDefaultAsync(f => f.Uid == uid && f.Cid == cid);
+    }
+
 
     public async Task<List<Favourite>> GetByUserAsync(int uid)
     {
@@ -48,5 +57,10 @@ public class FavouriteRepository : IFavouriteRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task UpdateAsync(Favourite favourite)
+    {
+        _context.Favourites.Update(favourite);
+        await _context.SaveChangesAsync();
+    }
 
 }

@@ -28,7 +28,10 @@ namespace Crypto_Website.Domain.Models
             public int? DeletedBy { get; set; }
 
             public bool IsActive { get; set; } = true;
-        }
+
+            public ICollection<RefreshToken> RefreshTokens { get; set; }
+           = new List<RefreshToken>();
+    }
     
 
 }

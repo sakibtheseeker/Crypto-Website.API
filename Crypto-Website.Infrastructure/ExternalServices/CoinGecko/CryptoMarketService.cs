@@ -16,7 +16,7 @@ namespace Crypto_Website.Application.Services
         public async Task<List<CoinGeckoMarketDto>> GetMarketCryptosAsync()
         {
             var response = await _httpClient.GetAsync(
-                "api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=101&page=1"
+                "api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=123&page=1"
             );
 
             response.EnsureSuccessStatusCode();

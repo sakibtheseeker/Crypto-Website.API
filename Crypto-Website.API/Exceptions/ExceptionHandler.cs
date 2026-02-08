@@ -15,24 +15,29 @@ namespace Crypto_Website.API.Exceptions
         }
 
         public async ValueTask<bool> TryHandleAsync(
-    HttpContext httpContext,
-    Exception exception,
-    CancellationToken cancellationToken)
+            HttpContext httpContext,
+            Exception exception,
+            CancellationToken cancellationToken)
         {
             httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            
+            var realMessage = exception.InnerException?.Message ?? exception.Message;
 
             var response = new ErrorMessage
             {
                 statusCode = 500,
                 Title = "Something went wrong",
-                Message = exception.Message
+                Message = realMessage  
             };
 
-            Logger.LogError(exception, exception.Message);
+          
+            Logger.LogError(exception, realMessage);
 
             await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
             return true;
         }
+
 
     }
 }

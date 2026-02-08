@@ -13,6 +13,7 @@ namespace Crypto_Website.Application.DTO.Wallet
         public string TransactionType { get; set; }
         public string TransactionStatus { get; set; }
         public string PaymentMethod { get; set; }
+        public string Description { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

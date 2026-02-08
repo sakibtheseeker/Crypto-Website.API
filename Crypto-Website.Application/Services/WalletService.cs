@@ -1,4 +1,5 @@
 ﻿using Crypto_Website.Application.DTO.Wallet;
+using Crypto_Website.Application.Helper;
 using Crypto_Website.Application.Interface;
 using Crypto_Website.Domain.Models;
 
@@ -15,51 +16,65 @@ public class WalletService
         _txRepo = txRepo;
     }
 
-
-    public async Task<WalletResponseDto> GetWalletAsync(int uid)
+    public async Task<ApiResponse<WalletResponseDto>> GetWalletAsync(int uid)
     {
         var wallet = await _walletRepo.GetByUserIdAsync(uid);
 
         if (wallet == null)
-            throw new Exception("Wallet not found");
+        {
+            return ApiResponse<WalletResponseDto>
+                .SuccessResponse(null, "Wallet not found");
+        }
 
-        return new WalletResponseDto
+
+        var result = new WalletResponseDto
         {
             Wid = wallet.Wid,
             CurrentBal = wallet.CurrentBal,
-            CreatedAt = wallet.CreatedAt,
+            CreatedAt = wallet.CreatedAt
         };
+
+        return ApiResponse<WalletResponseDto>
+            .SuccessResponse(result, "Wallet fetched successfully");
     }
 
-    public async Task<List<WalletTransactionResponseDto>> GetTransactionsAsync(int uid)
+    public async Task<ApiResponse<List<WalletTransactionResponseDto>>> GetTransactionsAsync(int uid)
     {
         var wallet = await _walletRepo.GetByUserIdAsync(uid);
 
         if (wallet == null)
-            throw new Exception("Wallet not found");
+        {
+            return ApiResponse<List<WalletTransactionResponseDto>>
+                .SuccessResponse(new List<WalletTransactionResponseDto>(), "No wallet found");
+        }
+
 
         var transactions = await _txRepo.GetByWalletIdAsync(wallet.Wid);
 
-        return transactions.Select(t => new WalletTransactionResponseDto
+        var result = transactions.Select(t => new WalletTransactionResponseDto
         {
             Wtid = t.Wtid,
             Amount = t.Amount,
             TransactionType = t.TransactionType,
             TransactionStatus = t.TransactionStatus,
             PaymentMethod = t.PaymentMethod,
+            Description = t.Description,
             CreatedAt = t.CreatedAt
         }).ToList();
+
+        return ApiResponse<List<WalletTransactionResponseDto>>
+            .SuccessResponse(result, "Transactions fetched successfully");
     }
 
-    public async Task DepositAsync(int uid, decimal amount)
+    public async Task<ApiResponse<object>> DepositAsync(int uid, decimal amount)
     {
         if (amount <= 0)
-            throw new Exception("Invalid amount");
+            return null;
 
         var wallet = await _walletRepo.GetByUserIdAsync(uid);
 
         if (wallet == null)
-            throw new Exception("Wallet not found");
+            return null;
 
         wallet.CurrentBal += amount;
         wallet.UpdatedAt = DateTime.UtcNow;
@@ -74,22 +89,26 @@ public class WalletService
             TransactionType = "CREDIT",
             TransactionStatus = "SUCCESS",
             PaymentMethod = "UPI",
+            Description = "Money Deposited",
             CreatedBy = uid
         });
+
+        return ApiResponse<object>
+            .SuccessResponse(null, "Deposit successful");
     }
 
-    public async Task WithdrawAsync(int uid, decimal amount)
+    public async Task<ApiResponse<object>> WithdrawAsync(int uid, decimal amount)
     {
         if (amount <= 0)
-            throw new Exception("Invalid amount");
+            return null;
 
         var wallet = await _walletRepo.GetByUserIdAsync(uid);
 
         if (wallet == null)
-            throw new Exception("Wallet not found");
+            return null;
 
         if (wallet.CurrentBal < amount)
-            throw new Exception("Insufficient balance");
+            return null;
 
         wallet.CurrentBal -= amount;
         wallet.UpdatedAt = DateTime.UtcNow;
@@ -104,7 +123,11 @@ public class WalletService
             TransactionType = "DEBIT",
             TransactionStatus = "SUCCESS",
             PaymentMethod = "WALLET",
+            Description ="Money Withdrawn",
             CreatedBy = uid
         });
+
+        return ApiResponse<object>
+            .SuccessResponse(null, "Withdraw successful");
     }
 }

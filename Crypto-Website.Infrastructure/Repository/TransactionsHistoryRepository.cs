@@ -11,11 +11,14 @@ public class TransactionsHistoryRepository : ITransactionsHistoryRepository
         _db = db;
     }
 
-    public async Task AddAsync(TransactionsHistory history)
+    public async Task<TransactionsHistory> AddAsync(TransactionsHistory history)
     {
         _db.TransactionsHistories.Add(history);
         await _db.SaveChangesAsync();
+
+        return history;
     }
+
 
     public async Task<List<TransactionsHistory>> GetByUserIdAsync(int uid)
     {

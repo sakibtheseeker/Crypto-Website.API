@@ -21,8 +21,15 @@ namespace Crypto_Website.Application.Services
                 Id = c.Cid,
                 Name = c.Cname,
                 Symbol = c.Csymbol,
+                Image = c.CimageUrl,
                 Price = c.CurrentPrice,
-                Provider = c.ProviderName
+                Provider = c.ProviderName,
+                Market_cap=c.market_cap,
+                Total_volume=c.total_volume,
+                Price_change_24h=c.price_change_24h,
+                Price_change_percentage_24h=c.price_change_percentage_24h
+
+
             }).ToList();
         }
     }

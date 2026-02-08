@@ -1,8 +1,9 @@
 ﻿using Crypto_Website.Application.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Crypto_Website.Logging;
+using Microsoft.AspNetCore.Authorization;
 
-
+[Authorize]
 [ApiController]
 [Route("api/v1/crypto")]
 public class CryptoController : ControllerBase
@@ -23,11 +24,7 @@ public class CryptoController : ControllerBase
             $"Crypto sync completed. Inserted count: {count}",
             LogLevelType.Information);
 
-        return Ok(new
-        {
-            message = "Cryptos inserted successfully",
-            inserted = count
-        });
+        return Ok(count);
     }
 
     [HttpGet]
@@ -35,7 +32,8 @@ public class CryptoController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
-        var result = await _cryptoService.GetCryptosAsync(pageNumber, pageSize);
+        int uid = int.Parse(User.FindFirst("uid")!.Value);
+        var result = await _cryptoService.GetCryptosAsync(uid,pageNumber, pageSize);
         return Ok(result);
     }
 

@@ -29,8 +29,11 @@ namespace Crypto_Website.Infrastructure.Data
 
         public DbSet<PortfolioAsset> PortfolioAssets { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Wallet>()
@@ -38,18 +41,24 @@ namespace Crypto_Website.Infrastructure.Data
             .HasIndex(w => w.Uid)
             .IsUnique();
 
-
             modelBuilder.Entity<PortfolioAsset>(entity =>
             {
                 entity.ToTable("PortfolioAssets");
 
-                entity.HasKey(e => e.Paid);
+                entity.HasKey(pa => pa.Paid);
 
-                entity.Property(e => e.Quantity)
-                      .HasPrecision(18, 8);
+                entity.HasIndex(pa => new { pa.Pid, pa.Cid })
+                      .IsUnique();
 
-                entity.Property(e => e.AvgBuyPrice)
-                      .HasPrecision(18, 2);
+                entity.HasOne(pa => pa.Portfolio)
+                      .WithMany(p => p.Assets)
+                      .HasForeignKey(pa => pa.Pid)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(pa => pa.Crypto)
+                      .WithMany()
+                      .HasForeignKey(pa => pa.Cid)
+                      .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<WalletTransaction>(entity =>
@@ -126,6 +135,23 @@ namespace Crypto_Website.Infrastructure.Data
                 entity.Property(c => c.CurrentPrice)
                       .HasPrecision(18, 8);
             });
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.ToTable("RefreshTokens");
+
+                entity.HasKey(rt => rt.RtId);
+
+                entity.Property(rt => rt.Token)
+                      .IsRequired();
+
+                entity.Property(rt => rt.IsActive)
+                      .HasDefaultValue(true);
+
+                entity.HasOne(rt => rt.User)
+                      .WithMany(u => u.RefreshTokens)
+                      .HasForeignKey(rt => rt.Uid)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<User>(entity =>
             {
@@ -147,15 +173,6 @@ namespace Crypto_Website.Infrastructure.Data
                       .IsRequired();
             });
 
-            modelBuilder.Entity<PortfolioAsset>()
-             .HasOne<Crypto>()
-             .WithMany()
-             .HasForeignKey(pa => pa.Cid);
-
-            modelBuilder.Entity<PortfolioAsset>()
-                .HasOne<Portfolio>()
-                .WithMany()
-                .HasForeignKey(pa => pa.Pid);
 
 
 

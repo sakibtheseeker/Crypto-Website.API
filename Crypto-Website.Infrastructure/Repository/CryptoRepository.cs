@@ -1,4 +1,5 @@
-﻿using Crypto_Website.Application.Interface;
+﻿using Crypto_Website.Application.DTO;
+using Crypto_Website.Application.Interface;
 using Crypto_Website.Domain.Models;
 using Crypto_Website.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +65,41 @@ namespace Crypto_Website.Infrastructure.Repository
 
             return (data, totalRecords);
         }
+
+        public async Task<Crypto?> GetBySymbolAsync(string symbol)
+        {
+            return await db.Cryptos
+                .FirstOrDefaultAsync(x => x.Csymbol == symbol && x.IsActive);
+        }
+
+        public async Task UpdateAsync(Crypto crypto)
+        {
+            db.Cryptos.Update(crypto);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<List<UserHoldingDTO>> GetUserPortfolioAssetsAsync(int uid)
+        {
+            return await (
+                from p in db.Portfolios
+                join pa in db.PortfolioAssets on p.Pid equals pa.Pid
+                where p.Uid == uid
+                      && p.IsActive
+                      && p.DeletedAt == null
+                select new UserHoldingDTO
+                {
+                    Cid = pa.Cid,
+                    Quantity = pa.Quantity
+                }
+            )
+            .AsNoTracking()
+            .ToListAsync();
+        }
+
+
+
+
+
 
 
 

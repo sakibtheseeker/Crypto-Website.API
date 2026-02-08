@@ -7,23 +7,15 @@ namespace Crypto_Website.Domain.Models
         [Key]
         public int Pid { get; set; }
         public int Uid { get; set; }
-        public int Cid { get; set; }
 
-        public decimal Quantity { get; set; }
-        public decimal AvgBuyPrice { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public int? CreatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public int? UpdatedBy { get; set; }
+        public DateTime? DeletedAt { get; set; }
+        public int? DeletedBy { get; set; }
+        public bool IsActive { get; set; }
 
-        public bool IsActive { get; set; } = true;
-
-        public void Buy(decimal quantity, decimal price)
-        {
-            var totalCost = (Quantity * AvgBuyPrice) + (quantity * price);
-            Quantity += quantity;
-            AvgBuyPrice = totalCost / Quantity;
-        }
-
-        public void Sell(decimal quantity)
-        {
-            Quantity -= quantity;
-        }
+        public ICollection<PortfolioAsset> Assets { get; set; }
     }
 }

@@ -14,6 +14,7 @@ namespace Crypto_Website.Application.DTO.Transaction
         public string TransactionStatus { get; set; }
         public decimal Price { get; set; }
         public decimal Quantity { get; set; }
+        public string Description { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Crypto_Website.Application.Services;
+﻿using Crypto_Website.Application.Helper;
+using Crypto_Website.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -21,12 +22,18 @@ public class PortfolioController : ControllerBase
         return int.Parse(User.FindFirst("uid")!.Value);
     }
 
-    [EnableRateLimiting("fixed")]
+    //[EnableRateLimiting("fixed")]
     [HttpGet]
     public async Task<IActionResult> GetPortfolio()
     {
         var result = await _service.GetPortfolioAsync(GetUserId());
-        return Ok(result);
+
+        return Ok(ApiResponse<object>.SuccessResponse(
+            result,
+            "Portfolio fetched successfully"
+        ));
     }
+
+
 
 }

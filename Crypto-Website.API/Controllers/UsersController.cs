@@ -16,33 +16,32 @@ namespace Crypto_Website.API.Controllers
             _service = service;
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _service.GetAllAsync());
         }
 
- 
         [HttpGet("{uid}")]
         public async Task<IActionResult> GetById(int uid)
         {
-            var user = await _service.GetByIdAsync(uid);
-            if (user == null)
+            var res = await _service.GetByIdAsync(uid);
+
+            if (res == null)
                 return NotFound("User not found");
 
-            return Ok(user);
+            return Ok(res);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _service.DeleteUserAsync(id);
+            var res = await _service.DeleteUserAsync(id);
 
-            if (!result)
+            if (res == null)
                 return NotFound("User not found");
 
-            return Ok(new { message = "User deleted successfully" });
+            return Ok(res);
         }
     }
 }

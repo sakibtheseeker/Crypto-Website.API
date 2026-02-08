@@ -15,6 +15,8 @@ public class TransactionsHistory
     public decimal Price { get; set; }
     public decimal Quantity { get; set; }
 
+    public string Description { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int? CreatedBy { get; set; }
 

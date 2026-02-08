@@ -1,10 +1,6 @@
-﻿using Crypto_Website.Application.Interface;
+﻿using Crypto_Website.Application.Helper;
+using Crypto_Website.Application.Interface;
 using Crypto_Website.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Crypto_Website.Application.Services
 {
@@ -17,25 +13,36 @@ namespace Crypto_Website.Application.Services
             _repository = repository;
         }
 
-        public async Task<List<User>> GetAllAsync()
+        public async Task<ApiResponse<List<User>>> GetAllAsync()
         {
-            return await _repository.GetAllAsync();
+            var users = await _repository.GetAllAsync();
+
+            return ApiResponse<List<User>>
+                .SuccessResponse(users, "Users fetched successfully");
         }
 
-        public async Task<User?> GetByIdAsync(int uid)
-        {
-            return await _repository.GetByIdAsync(uid);
-        }
-
-        public async Task<bool> DeleteUserAsync(int uid)
+        public async Task<ApiResponse<User?>> GetByIdAsync(int uid)
         {
             var user = await _repository.GetByIdAsync(uid);
 
             if (user == null)
-                return false;
+                return null;
+
+            return ApiResponse<User?>
+                .SuccessResponse(user, "User fetched successfully");
+        }
+
+        public async Task<ApiResponse<object>> DeleteUserAsync(int uid)
+        {
+            var user = await _repository.GetByIdAsync(uid);
+
+            if (user == null)
+                return null;
 
             await _repository.DeleteAsync(user);
-            return true;
+
+            return ApiResponse<object>
+                .SuccessResponse(null, "User deleted successfully");
         }
     }
 }
