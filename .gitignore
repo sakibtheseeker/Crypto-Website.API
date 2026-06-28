@@ -43,10 +43,11 @@ AnyCPU/
 ########################################
 secrets.json
 appsettings.Development.json
+appsettings.development.json
 appsettings.Local.json
 appsettings.*.json
 !appsettings.json
-
+!appsettings.example.json
 ########################################
 # Logs
 ########################################
